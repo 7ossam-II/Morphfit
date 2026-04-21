@@ -63,7 +63,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
 
-  const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
+  const countries = ["us", "gb", "de", "dk", "se", "fr", "es", "it"];
 
   logger.info("Seeding store data...");
   const [store] = await storeModuleService.listStores();
@@ -92,11 +92,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
       store_id: store.id,
       supported_currencies: [
         {
-          currency_code: "eur",
+          currency_code: "usd",
           is_default: true,
         },
         {
-          currency_code: "usd",
+          currency_code: "eur",
         },
       ],
     },
@@ -115,15 +115,21 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       regions: [
         {
+          name: "United States",
+          currency_code: "usd",
+          countries: ["us"],
+          payment_providers: ["pp_system_default"],
+        },
+        {
           name: "Europe",
           currency_code: "eur",
-          countries,
+          countries: ["gb", "de", "dk", "se", "fr", "es", "it"],
           payment_providers: ["pp_system_default"],
         },
       ],
     },
   });
-  const region = regionResult[0];
+  const region = regionResult[0]; // US region as default
   logger.info("Finished seeding regions.");
 
   logger.info("Seeding tax regions...");
@@ -142,10 +148,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       locations: [
         {
-          name: "European Warehouse",
+          name: "MorphFit US Warehouse",
           address: {
-            city: "Copenhagen",
-            country_code: "DK",
+            city: "Los Angeles",
+            country_code: "US",
             address_1: "",
           },
         },
@@ -194,38 +200,14 @@ export default async function seedDemoData({ container }: ExecArgs) {
   }
 
   const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-    name: "European Warehouse delivery",
+    name: "MorphFit US Shipping",
     type: "shipping",
     service_zones: [
       {
-        name: "Europe",
+        name: "United States",
         geo_zones: [
           {
-            country_code: "gb",
-            type: "country",
-          },
-          {
-            country_code: "de",
-            type: "country",
-          },
-          {
-            country_code: "dk",
-            type: "country",
-          },
-          {
-            country_code: "se",
-            type: "country",
-          },
-          {
-            country_code: "fr",
-            type: "country",
-          },
-          {
-            country_code: "es",
-            type: "country",
-          },
-          {
-            country_code: "it",
+            country_code: "us",
             type: "country",
           },
         ],
@@ -377,518 +359,335 @@ export default async function seedDemoData({ container }: ExecArgs) {
   ).run({
     input: {
       product_categories: [
-        {
-          name: "Shirts",
-          is_active: true,
-        },
-        {
-          name: "Sweatshirts",
-          is_active: true,
-        },
-        {
-          name: "Pants",
-          is_active: true,
-        },
-        {
-          name: "Merch",
-          is_active: true,
-        },
+        { name: "Protein", handle: "protein", is_active: true },
+        { name: "Pre-Workout", handle: "pre-workout", is_active: true },
+        { name: "Vitamins", handle: "vitamins", is_active: true },
+        { name: "Accessories", handle: "accessories", is_active: true },
       ],
     },
   });
 
+  const proteinCatId = categoryResult.find((c) => c.name === "Protein")!.id;
+  const preWorkoutCatId = categoryResult.find((c) => c.name === "Pre-Workout")!.id;
+  const vitaminsCatId = categoryResult.find((c) => c.name === "Vitamins")!.id;
+  const accessoriesCatId = categoryResult.find((c) => c.name === "Accessories")!.id;
+
   await createProductsWorkflow(container).run({
     input: {
       products: [
+        // ── Protein ──────────────────────────────────────────────────
         {
-          title: "Medusa T-Shirt",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Shirts")!.id,
-          ],
+          title: "MorphFit Whey Protein",
+          category_ids: [proteinCatId],
           description:
-            "Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.",
-          handle: "t-shirt",
-          weight: 400,
+            "Premium whey protein isolate with 25g of protein per serving. Supports muscle growth and recovery. Available in Chocolate and Vanilla flavors.",
+          handle: "whey-protein",
+          weight: 1000,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-back.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-back.png",
-            },
+            { url: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=800" },
           ],
           options: [
-            {
-              title: "Size",
-              values: ["S", "M", "L", "XL"],
-            },
-            {
-              title: "Color",
-              values: ["Black", "White"],
-            },
+            { title: "Flavor", values: ["Chocolate", "Vanilla", "Strawberry"] },
+            { title: "Size", values: ["2 lbs", "5 lbs"] },
           ],
           variants: [
             {
-              title: "S / Black",
-              sku: "SHIRT-S-BLACK",
-              options: {
-                Size: "S",
-                Color: "Black",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Chocolate / 2 lbs",
+              sku: "WHEY-CHOC-2LB",
+              options: { Flavor: "Chocolate", Size: "2 lbs" },
+              prices: [{ amount: 3999, currency_code: "usd" }, { amount: 3699, currency_code: "eur" }],
             },
             {
-              title: "S / White",
-              sku: "SHIRT-S-WHITE",
-              options: {
-                Size: "S",
-                Color: "White",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Chocolate / 5 lbs",
+              sku: "WHEY-CHOC-5LB",
+              options: { Flavor: "Chocolate", Size: "5 lbs" },
+              prices: [{ amount: 7999, currency_code: "usd" }, { amount: 7299, currency_code: "eur" }],
             },
             {
-              title: "M / Black",
-              sku: "SHIRT-M-BLACK",
-              options: {
-                Size: "M",
-                Color: "Black",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Vanilla / 2 lbs",
+              sku: "WHEY-VAN-2LB",
+              options: { Flavor: "Vanilla", Size: "2 lbs" },
+              prices: [{ amount: 3999, currency_code: "usd" }, { amount: 3699, currency_code: "eur" }],
             },
             {
-              title: "M / White",
-              sku: "SHIRT-M-WHITE",
-              options: {
-                Size: "M",
-                Color: "White",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Vanilla / 5 lbs",
+              sku: "WHEY-VAN-5LB",
+              options: { Flavor: "Vanilla", Size: "5 lbs" },
+              prices: [{ amount: 7999, currency_code: "usd" }, { amount: 7299, currency_code: "eur" }],
             },
             {
-              title: "L / Black",
-              sku: "SHIRT-L-BLACK",
-              options: {
-                Size: "L",
-                Color: "Black",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "L / White",
-              sku: "SHIRT-L-WHITE",
-              options: {
-                Size: "L",
-                Color: "White",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "XL / Black",
-              sku: "SHIRT-XL-BLACK",
-              options: {
-                Size: "XL",
-                Color: "Black",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "XL / White",
-              sku: "SHIRT-XL-WHITE",
-              options: {
-                Size: "XL",
-                Color: "White",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Strawberry / 2 lbs",
+              sku: "WHEY-STRAW-2LB",
+              options: { Flavor: "Strawberry", Size: "2 lbs" },
+              prices: [{ amount: 3999, currency_code: "usd" }, { amount: 3699, currency_code: "eur" }],
             },
           ],
-          sales_channels: [
-            {
-              id: defaultSalesChannel[0].id,
-            },
-          ],
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Medusa Sweatshirt",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Sweatshirts")!.id,
-          ],
+          title: "MorphFit Casein Protein",
+          category_ids: [proteinCatId],
           description:
-            "Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.",
-          handle: "sweatshirt",
-          weight: 400,
+            "Slow-digesting micellar casein protein for overnight recovery. 24g of protein per serving. Perfect as a nighttime shake.",
+          handle: "casein-protein",
+          weight: 1000,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-back.png",
-            },
+            { url: "https://images.unsplash.com/photo-1616671276441-2f2c277b8bf6?w=800" },
           ],
           options: [
-            {
-              title: "Size",
-              values: ["S", "M", "L", "XL"],
-            },
+            { title: "Flavor", values: ["Chocolate", "Vanilla"] },
           ],
           variants: [
             {
-              title: "S",
-              sku: "SWEATSHIRT-S",
-              options: {
-                Size: "S",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Chocolate",
+              sku: "CASEIN-CHOC-2LB",
+              options: { Flavor: "Chocolate" },
+              prices: [{ amount: 4499, currency_code: "usd" }, { amount: 4099, currency_code: "eur" }],
             },
             {
-              title: "M",
-              sku: "SWEATSHIRT-M",
-              options: {
-                Size: "M",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "L",
-              sku: "SWEATSHIRT-L",
-              options: {
-                Size: "L",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "XL",
-              sku: "SWEATSHIRT-XL",
-              options: {
-                Size: "XL",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Vanilla",
+              sku: "CASEIN-VAN-2LB",
+              options: { Flavor: "Vanilla" },
+              prices: [{ amount: 4499, currency_code: "usd" }, { amount: 4099, currency_code: "eur" }],
             },
           ],
-          sales_channels: [
-            {
-              id: defaultSalesChannel[0].id,
-            },
-          ],
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Medusa Sweatpants",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Pants")!.id,
-          ],
+          title: "MorphFit Plant Protein",
+          category_ids: [proteinCatId],
           description:
-            "Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.",
-          handle: "sweatpants",
-          weight: 400,
+            "100% plant-based protein blend from pea and brown rice. 22g of protein per serving, fully vegan and dairy-free.",
+          handle: "plant-protein",
+          weight: 900,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-back.png",
-            },
+            { url: "https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f?w=800" },
           ],
           options: [
-            {
-              title: "Size",
-              values: ["S", "M", "L", "XL"],
-            },
+            { title: "Flavor", values: ["Chocolate", "Vanilla", "Unflavored"] },
           ],
           variants: [
             {
-              title: "S",
-              sku: "SWEATPANTS-S",
-              options: {
-                Size: "S",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Chocolate",
+              sku: "PLANT-CHOC-2LB",
+              options: { Flavor: "Chocolate" },
+              prices: [{ amount: 4299, currency_code: "usd" }, { amount: 3899, currency_code: "eur" }],
             },
             {
-              title: "M",
-              sku: "SWEATPANTS-M",
-              options: {
-                Size: "M",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Vanilla",
+              sku: "PLANT-VAN-2LB",
+              options: { Flavor: "Vanilla" },
+              prices: [{ amount: 4299, currency_code: "usd" }, { amount: 3899, currency_code: "eur" }],
             },
             {
-              title: "L",
-              sku: "SWEATPANTS-L",
-              options: {
-                Size: "L",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "XL",
-              sku: "SWEATPANTS-XL",
-              options: {
-                Size: "XL",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Unflavored",
+              sku: "PLANT-UNFL-2LB",
+              options: { Flavor: "Unflavored" },
+              prices: [{ amount: 3999, currency_code: "usd" }, { amount: 3599, currency_code: "eur" }],
             },
           ],
-          sales_channels: [
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
+        },
+        // ── Pre-Workout ───────────────────────────────────────────────
+        {
+          title: "MorphFit Pre-Workout Ignite",
+          category_ids: [preWorkoutCatId],
+          description:
+            "High-stimulant pre-workout with 300mg caffeine, beta-alanine, and L-citrulline. Maximum energy, focus, and pump for intense training sessions.",
+          handle: "pre-workout-ignite",
+          weight: 350,
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          images: [
+            { url: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800" },
+          ],
+          options: [
+            { title: "Flavor", values: ["Blue Raspberry", "Watermelon", "Fruit Punch"] },
+          ],
+          variants: [
             {
-              id: defaultSalesChannel[0].id,
+              title: "Blue Raspberry",
+              sku: "PRE-IGNITE-BLURAZ",
+              options: { Flavor: "Blue Raspberry" },
+              prices: [{ amount: 4999, currency_code: "usd" }, { amount: 4499, currency_code: "eur" }],
+            },
+            {
+              title: "Watermelon",
+              sku: "PRE-IGNITE-WM",
+              options: { Flavor: "Watermelon" },
+              prices: [{ amount: 4999, currency_code: "usd" }, { amount: 4499, currency_code: "eur" }],
+            },
+            {
+              title: "Fruit Punch",
+              sku: "PRE-IGNITE-FP",
+              options: { Flavor: "Fruit Punch" },
+              prices: [{ amount: 4999, currency_code: "usd" }, { amount: 4499, currency_code: "eur" }],
             },
           ],
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Medusa Shorts",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Merch")!.id,
-          ],
+          title: "MorphFit Pre-Workout Stim-Free",
+          category_ids: [preWorkoutCatId],
           description:
-            "Reimagine the feeling of classic shorts. With our cotton shorts, everyday essentials no longer have to be ordinary.",
-          handle: "shorts",
-          weight: 400,
+            "Stimulant-free pre-workout with citrulline malate, beta-alanine, and betaine. Perfect for evening training or those sensitive to caffeine.",
+          handle: "pre-workout-stim-free",
+          weight: 300,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-front.png",
-            },
-            {
-              url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-back.png",
-            },
+            { url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800" },
           ],
           options: [
-            {
-              title: "Size",
-              values: ["S", "M", "L", "XL"],
-            },
+            { title: "Flavor", values: ["Lemon Lime", "Grape"] },
           ],
           variants: [
             {
-              title: "S",
-              sku: "SHORTS-S",
-              options: {
-                Size: "S",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Lemon Lime",
+              sku: "PRE-SF-LL",
+              options: { Flavor: "Lemon Lime" },
+              prices: [{ amount: 3999, currency_code: "usd" }, { amount: 3599, currency_code: "eur" }],
             },
             {
-              title: "M",
-              sku: "SHORTS-M",
-              options: {
-                Size: "M",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "L",
-              sku: "SHORTS-L",
-              options: {
-                Size: "L",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
-            },
-            {
-              title: "XL",
-              sku: "SHORTS-XL",
-              options: {
-                Size: "XL",
-              },
-              prices: [
-                {
-                  amount: 10,
-                  currency_code: "eur",
-                },
-                {
-                  amount: 15,
-                  currency_code: "usd",
-                },
-              ],
+              title: "Grape",
+              sku: "PRE-SF-GRP",
+              options: { Flavor: "Grape" },
+              prices: [{ amount: 3999, currency_code: "usd" }, { amount: 3599, currency_code: "eur" }],
             },
           ],
-          sales_channels: [
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
+        },
+        // ── Vitamins ──────────────────────────────────────────────────
+        {
+          title: "MorphFit Multivitamin",
+          category_ids: [vitaminsCatId],
+          description:
+            "Complete daily multivitamin with 25+ essential vitamins and minerals. Formulated specifically for active athletes and gym-goers.",
+          handle: "multivitamin",
+          weight: 200,
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          images: [
+            { url: "https://images.unsplash.com/photo-1550572017-edd951aa8ca4?w=800" },
+          ],
+          options: [
+            { title: "Count", values: ["90 Capsules", "180 Capsules"] },
+          ],
+          variants: [
             {
-              id: defaultSalesChannel[0].id,
+              title: "90 Capsules",
+              sku: "MULTI-90",
+              options: { Count: "90 Capsules" },
+              prices: [{ amount: 2499, currency_code: "usd" }, { amount: 2199, currency_code: "eur" }],
+            },
+            {
+              title: "180 Capsules",
+              sku: "MULTI-180",
+              options: { Count: "180 Capsules" },
+              prices: [{ amount: 3999, currency_code: "usd" }, { amount: 3599, currency_code: "eur" }],
             },
           ],
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
+        },
+        {
+          title: "MorphFit Omega-3 Fish Oil",
+          category_ids: [vitaminsCatId],
+          description:
+            "High-potency omega-3 fish oil with 1000mg EPA+DHA per serving. Supports heart health, joint recovery, and inflammation reduction.",
+          handle: "omega-3",
+          weight: 150,
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          images: [
+            { url: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800" },
+          ],
+          options: [
+            { title: "Count", values: ["90 Softgels", "180 Softgels"] },
+          ],
+          variants: [
+            {
+              title: "90 Softgels",
+              sku: "OMEGA3-90",
+              options: { Count: "90 Softgels" },
+              prices: [{ amount: 1999, currency_code: "usd" }, { amount: 1799, currency_code: "eur" }],
+            },
+            {
+              title: "180 Softgels",
+              sku: "OMEGA3-180",
+              options: { Count: "180 Softgels" },
+              prices: [{ amount: 3499, currency_code: "usd" }, { amount: 3199, currency_code: "eur" }],
+            },
+          ],
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
+        },
+        {
+          title: "MorphFit Vitamin D3 + K2",
+          category_ids: [vitaminsCatId],
+          description:
+            "5000 IU Vitamin D3 paired with 100mcg Vitamin K2 for optimal absorption. Supports bone health, immune function, and testosterone levels.",
+          handle: "vitamin-d3-k2",
+          weight: 100,
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          images: [
+            { url: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800" },
+          ],
+          options: [
+            { title: "Count", values: ["60 Capsules"] },
+          ],
+          variants: [
+            {
+              title: "60 Capsules",
+              sku: "VITD3K2-60",
+              options: { Count: "60 Capsules" },
+              prices: [{ amount: 1799, currency_code: "usd" }, { amount: 1599, currency_code: "eur" }],
+            },
+          ],
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
+        },
+        // ── Accessories ───────────────────────────────────────────────
+        {
+          title: "MorphFit Shaker Bottle",
+          category_ids: [accessoriesCatId],
+          description:
+            "BPA-free 28oz shaker bottle with leak-proof lid and stainless steel mixing ball. Dishwasher safe.",
+          handle: "shaker-bottle",
+          weight: 300,
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          images: [
+            { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800" },
+          ],
+          options: [
+            { title: "Color", values: ["Black", "White", "Orange"] },
+          ],
+          variants: [
+            {
+              title: "Black",
+              sku: "SHAKER-BLK",
+              options: { Color: "Black" },
+              prices: [{ amount: 1499, currency_code: "usd" }, { amount: 1299, currency_code: "eur" }],
+            },
+            {
+              title: "White",
+              sku: "SHAKER-WHT",
+              options: { Color: "White" },
+              prices: [{ amount: 1499, currency_code: "usd" }, { amount: 1299, currency_code: "eur" }],
+            },
+            {
+              title: "Orange",
+              sku: "SHAKER-ORG",
+              options: { Color: "Orange" },
+              prices: [{ amount: 1499, currency_code: "usd" }, { amount: 1299, currency_code: "eur" }],
+            },
+          ],
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
       ],
     },
