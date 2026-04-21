@@ -21,6 +21,13 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        primary: "#F97316",
+        secondary: "#FB923C",
+        cta: "#22C55E",
+        background: "#1F2937",
+        surface: "#111827",
+        "surface-raised": "#374151",
+        "text-base": "#F8FAFC",
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",
@@ -59,7 +66,9 @@ module.exports = {
         "3xl": "2rem",
       },
       fontFamily: {
+        heading: ["Barlow Condensed", "sans-serif"],
         sans: [
+          "Barlow",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
