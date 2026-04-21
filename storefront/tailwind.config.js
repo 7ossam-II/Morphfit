@@ -27,7 +27,7 @@ module.exports = {
         background: "#1F2937",
         surface: "#111827",
         "surface-raised": "#374151",
-        "text-base": "#F8FAFC",
+        foreground: "#F8FAFC",
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",
