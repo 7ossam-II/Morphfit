@@ -29,11 +29,11 @@ export default function Footer() {
           <div className="col-span-2 small:col-span-1">
             <LocalizedClientLink
               href="/"
-              className="font-heading font-bold text-3xl text-primary tracking-tight cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+              className="font-heading font-bold text-3xl text-primary tracking-tight cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded"
             >
               MORPHFIT
             </LocalizedClientLink>
-            <p className="mt-4 text-grey-40 text-sm font-sans leading-relaxed">
+            <p className="mt-4 text-grey-30 text-sm font-sans leading-relaxed">
               Premium supplements and workout gear to fuel your transformation.
             </p>
           </div>
@@ -49,7 +49,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <LocalizedClientLink
                       href={link.href}
-                      className="text-grey-40 hover:text-primary transition-colors duration-200 text-sm font-sans cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                      className="text-grey-30 hover:text-primary transition-colors duration-200 text-sm font-sans cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded"
                     >
                       {link.label}
                     </LocalizedClientLink>
@@ -61,19 +61,19 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-grey-70 flex flex-col small:flex-row items-center justify-between gap-4">
-          <p className="text-grey-50 text-sm font-sans">
+          <p className="text-grey-30 text-sm font-sans">
             &copy; {new Date().getFullYear()} MorphFit. All rights reserved.
           </p>
           <div className="flex gap-6">
             <LocalizedClientLink
               href="/privacy"
-              className="text-grey-50 hover:text-primary text-sm transition-colors duration-200 cursor-pointer font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+              className="text-grey-30 hover:text-primary text-sm transition-colors duration-200 cursor-pointer font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded"
             >
               Privacy Policy
             </LocalizedClientLink>
             <LocalizedClientLink
               href="/terms"
-              className="text-grey-50 hover:text-primary text-sm transition-colors duration-200 cursor-pointer font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+              className="text-grey-30 hover:text-primary text-sm transition-colors duration-200 cursor-pointer font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded"
             >
               Terms of Service
             </LocalizedClientLink>
