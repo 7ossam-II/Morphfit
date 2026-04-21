@@ -1,51 +1,60 @@
-# MorphFit - Claude Code Ground Instructions
+# MorphFit - Claude Code Operational Contract
 
-Welcome to the MorphFit project! This is a modern e-commerce platform designed as a clone of Bodybuilding.com's shop, built with a headless architecture using Medusa.js (backend) and Next.js (storefront).
+Welcome to the MorphFit project. You are an autonomous AI agent (Claude Code) tasked with building a high-converting e-commerce store for supplements, vitamins, and workout accessories. This project is a clone of Bodybuilding.com's shop, built with a headless architecture.
 
-## Project Goal
-Build a high-converting, professional e-commerce store for supplements, vitamins, and workout accessories, mirroring the structure and features of Bodybuilding.com, but with a clean, modern UI/UX powered by the `ui-ux-pro-max-skill`.
-
-## Architecture
+## 1. Project Architecture
 This is a monorepo containing two main parts:
-1.  **`backend/`**: Medusa.js v2 application (Core API & Admin Dashboard).
-2.  **`storefront/`**: Next.js 15 App Router storefront (using the `medusajs/nextjs-starter-medusa` template).
+- **`backend/`**: Medusa.js v2 application (Core API & Admin Dashboard). Runs on `localhost:9000`.
+- **`storefront/`**: Next.js 15 App Router storefront (using the `medusajs/nextjs-starter-medusa` template). Runs on `localhost:8000`.
+- **Database**: PostgreSQL running via Docker Compose (`localhost:5432`).
 
-## UI/UX Guidelines (ui-ux-pro-max-skill)
-We are using the `ui-ux-pro-max-skill` to ensure a professional design.
-1.  **Skill Activation**: The skill is installed in this repository. When working on UI/UX tasks, the skill will automatically provide design intelligence.
-2.  **Design System**: A design system tailored for a fitness/supplement e-commerce store should be generated and persisted in the `design-system/` directory.
-3.  **Stack**: We are using `html-tailwind` (Next.js + Tailwind CSS). Ensure all styling adheres to the generated design system and Tailwind best practices.
+## 2. Your Superpowers (Plugins)
+The user has installed several Superpowers plugins that dictate your workflow. You MUST use them:
+- **`writing-plans` & `executing-plans`**: Before writing code, you must write a plan. Execute it step-by-step.
+- **`dispatching-parallel-agents` & `subagent-driven-development`**: Use subagents for isolated tasks (e.g., "Subagent A: build the Hero component", "Subagent B: build the Footer").
+- **`test-driven-development` & `systematic-debugging`**: Write tests where applicable and debug systematically.
+- **`requesting-code-review` & `verification-before-completion`**: Verify your work and request review before marking a task complete.
 
-## Workflow Steps for Claude Code
+## 3. Medusa Agent Skills & MCP
+The user has installed the official Medusa Claude Code plugins.
+- You have access to `medusa-dev` and `ecommerce-storefront` skills. Use them to ensure you follow Medusa best practices.
+- You have access to the Medusa MCP server (`https://docs.medusajs.com/mcp`). **Always query the MCP server** if you are unsure about Medusa v2 APIs, Next.js storefront data fetching, or backend module creation.
 
-Please follow these steps sequentially to build the project:
+## 4. UI/UX Intelligence (ui-ux-pro-max-skill)
+The `ui-ux-pro-max-skill` is installed in `.claude/skills/ui-ux-pro-max/`.
+- **Single Source of Truth**: The design system has already been generated and persisted at `design-system/morphfit/MASTER.md`.
+- **Rule**: Before building ANY UI component in the `storefront/`, you MUST read `design-system/morphfit/MASTER.md`.
+- **Rule**: If building a specific page (e.g., `checkout`), check if `design-system/morphfit/pages/checkout.md` exists. If it does, its rules override the MASTER file.
+- **Stack**: We are using `html-tailwind` (Next.js + Tailwind CSS). Strictly follow the colors, typography, and spacing defined in the design system. Do not invent new colors.
 
-### Step 1: Project Initialization
-1.  Initialize the Medusa backend in the `backend/` directory using `npx create-medusa-app@latest --with-nextjs-starter`. (Note: You may need to move the generated storefront to the `storefront/` directory if it creates it alongside). Alternatively, install them separately as per Medusa docs.
-2.  Set up the necessary environment variables (`.env`) for both the backend (PostgreSQL) and storefront (Medusa API URL, Stripe keys).
-3.  Ensure both the backend (`localhost:9000`) and storefront (`localhost:8000`) can run successfully.
+## 5. Execution Workflow
 
-### Step 2: UI/UX Setup
-1.  If not already done, install the `uipro-cli` globally: `npm install -g uipro-cli`.
-2.  Initialize the skill for Claude Code in the project root: `uipro init --ai claude`.
-3.  Generate the design system: `python3 .claude/skills/ui-ux-pro-max/scripts/search.py "fitness supplements ecommerce" --design-system --persist -p "MorphFit"`.
-4.  Review the generated `design-system/MASTER.md` and apply the color palette, typography, and styling rules to the `storefront/tailwind.config.js` and global CSS.
+When the user prompts you to begin, follow this exact sequence:
 
-### Step 3: Frontend Development (Bodybuilding.com Clone)
-Focus on the `storefront/` directory.
-1.  **Global Layout**: Implement the header (mega-menu, search, cart, account) and footer, matching the structure of Bodybuilding.com.
-2.  **Homepage**: Build the hero section, promotional banners, "Shop by Category", and "Best Sellers" sections.
-3.  **Product Listing Page (PLP)**: Implement the category pages with filtering (by goal, category, brand) and sorting options.
-4.  **Product Detail Page (PDP)**: Enhance the default PDP to include detailed product descriptions, reviews, and variations (flavor, size).
-5.  **Cart & Checkout**: Ensure the cart and checkout flows are styled according to the design system and function correctly with the Medusa backend.
+### Phase 1: Environment Verification
+1. Verify Docker containers are running (`docker ps`). If not, run `docker compose up -d`.
+2. Verify the backend can start: `cd backend && npm run dev`.
+3. Verify the storefront can start: `cd storefront && npm run dev`.
+4. If any environment variables are missing, check `.env` in backend and `.env.local` in storefront.
 
-### Step 4: Backend Customization (If needed)
-Focus on the `backend/` directory.
-1.  Add any custom data models or API routes required for specific features (e.g., custom product attributes).
-2.  Create a seed script to populate the database with sample supplement products, categories, and brands to facilitate frontend development.
+### Phase 2: Tailwind & Design System Integration
+1. Read `design-system/morphfit/MASTER.md`.
+2. Update `storefront/tailwind.config.js` to include the exact color hex codes, fonts, and spacing variables defined in the MASTER file.
+3. Update `storefront/src/styles/globals.css` to import the required Google Fonts (Barlow Condensed & Barlow) and set up CSS variables if needed.
 
-## General Rules
-*   **Always check the design system** (`design-system/MASTER.md` and `design-system/pages/*.md`) before writing UI code.
-*   **Use Tailwind CSS** for all styling. Avoid custom CSS unless absolutely necessary.
-*   **Commit frequently** with descriptive messages.
-*   If you encounter issues with Medusa or Next.js, consult their respective official documentation.
+### Phase 3: Frontend Development (The Clone)
+Use your subagents to build the following, mirroring Bodybuilding.com's structure but using our design system:
+1. **Global Layout**: Mega-menu header (Shop by Category, Shop by Goal, Brands), search bar, cart icon, and footer.
+2. **Homepage**: Hero banner, promotional sections, and "Best Sellers" product grid.
+3. **Product Listing Page (PLP)**: Category pages with filtering (goal, brand, type) and sorting.
+4. **Product Detail Page (PDP)**: Enhance the default PDP with detailed descriptions, reviews, and variations (flavor, size).
+5. **Cart & Checkout**: Style the existing Next.js starter checkout flow to match the MorphFit brand.
+
+### Phase 4: Backend Customization
+1. Create a seed script in `backend/src/scripts/seed.ts` to populate the database with sample supplement products, categories (Protein, Pre-Workout, Vitamins), and brands.
+2. Run the seed script so the storefront has data to display.
+
+## 6. Strict Constraints
+- **Never push directly to `main` or `master`**. Use `using-git-worktrees` and `finishing-a-development-branch` superpowers.
+- **No Emojis in UI**: Use SVG icons (Heroicons/Lucide) as dictated by the design system anti-patterns.
+- **Accessibility**: Ensure 4.5:1 text contrast and visible focus states.
