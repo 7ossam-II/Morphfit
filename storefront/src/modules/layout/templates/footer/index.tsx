@@ -1,155 +1,83 @@
-import { listCategories } from "@lib/data/categories"
-import { listCollections } from "@lib/data/collections"
-import { Text, clx } from "@medusajs/ui"
-
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import MedusaCTA from "@modules/layout/components/medusa-cta"
 
-export default async function Footer() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
-  const productCategories = await listCategories()
+const FOOTER_LINKS = {
+  Shop: [
+    { label: "Protein", href: "/categories/protein" },
+    { label: "Pre-Workout", href: "/categories/pre-workout" },
+    { label: "Vitamins", href: "/categories/vitamins" },
+    { label: "All Products", href: "/store" },
+  ],
+  Goals: [
+    { label: "Build Muscle", href: "/collections/build-muscle" },
+    { label: "Lose Weight", href: "/collections/lose-weight" },
+    { label: "Boost Energy", href: "/collections/boost-energy" },
+  ],
+  Support: [
+    { label: "FAQ", href: "/faq" },
+    { label: "Shipping Policy", href: "/shipping" },
+    { label: "Returns", href: "/returns" },
+    { label: "Contact Us", href: "/contact" },
+  ],
+}
 
+export default function Footer() {
   return (
-    <footer className="border-t border-ui-border-base w-full">
-      <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
-          <div>
+    <footer className="bg-surface border-t border-grey-70 mt-16">
+      <div className="content-container py-16">
+        <div className="grid grid-cols-2 small:grid-cols-4 gap-8">
+          {/* Brand column */}
+          <div className="col-span-2 small:col-span-1">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
+              className="font-heading font-bold text-3xl text-primary tracking-tight cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded"
             >
-              Medusa Store
+              MORPHFIT
             </LocalizedClientLink>
+            <p className="mt-4 text-grey-30 text-sm font-sans leading-relaxed">
+              Premium supplements and workout gear to fuel your transformation.
+            </p>
           </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
-            {productCategories && productCategories?.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Categories
-                </span>
-                <ul
-                  className="grid grid-cols-1 gap-2"
-                  data-testid="footer-categories"
-                >
-                  {productCategories?.slice(0, 6).map((c) => {
-                    if (c.parent_category) {
-                      return
-                    }
 
-                    const children =
-                      c.category_children?.map((child) => ({
-                        name: child.name,
-                        handle: child.handle,
-                        id: child.id,
-                      })) || null
-
-                    return (
-                      <li
-                        className="flex flex-col gap-2 text-ui-fg-subtle txt-small"
-                        key={c.id}
-                      >
-                        <LocalizedClientLink
-                          className={clx(
-                            "hover:text-ui-fg-base",
-                            children && "txt-small-plus"
-                          )}
-                          href={`/categories/${c.handle}`}
-                          data-testid="category-link"
-                        >
-                          {c.name}
-                        </LocalizedClientLink>
-                        {children && (
-                          <ul className="grid grid-cols-1 ml-3 gap-2">
-                            {children &&
-                              children.map((child) => (
-                                <li key={child.id}>
-                                  <LocalizedClientLink
-                                    className="hover:text-ui-fg-base"
-                                    href={`/categories/${child.handle}`}
-                                    data-testid="category-link"
-                                  >
-                                    {child.name}
-                                  </LocalizedClientLink>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-            {collections && collections.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Collections
-                </span>
-                <ul
-                  className={clx(
-                    "grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small",
-                    {
-                      "grid-cols-2": (collections?.length || 0) > 3,
-                    }
-                  )}
-                >
-                  {collections?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
-                        href={`/collections/${c.handle}`}
-                      >
-                        {c.title}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Medusa</span>
-              <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
-                <li>
-                  <a
-                    href="https://github.com/medusajs"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://docs.medusajs.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/medusajs/nextjs-starter-medusa"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Source code
-                  </a>
-                </li>
+          {/* Link columns */}
+          {Object.entries(FOOTER_LINKS).map(([section, links]) => (
+            <div key={section}>
+              <h3 className="font-heading font-semibold text-foreground uppercase tracking-widest text-xs mb-4">
+                {section}
+              </h3>
+              <ul className="space-y-2">
+                {links.map((link) => (
+                  <li key={link.href}>
+                    <LocalizedClientLink
+                      href={link.href}
+                      className="text-grey-30 hover:text-primary transition-colors duration-200 text-sm font-sans cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded"
+                    >
+                      {link.label}
+                    </LocalizedClientLink>
+                  </li>
+                ))}
               </ul>
             </div>
-          </div>
+          ))}
         </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Medusa Store. All rights reserved.
-          </Text>
-          <MedusaCTA />
+
+        <div className="mt-12 pt-8 border-t border-grey-70 flex flex-col small:flex-row items-center justify-between gap-4">
+          <p className="text-grey-30 text-sm font-sans">
+            &copy; {new Date().getFullYear()} MorphFit. All rights reserved.
+          </p>
+          <div className="flex gap-6">
+            <LocalizedClientLink
+              href="/privacy"
+              className="text-grey-30 hover:text-primary text-sm transition-colors duration-200 cursor-pointer font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded"
+            >
+              Privacy Policy
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/terms"
+              className="text-grey-30 hover:text-primary text-sm transition-colors duration-200 cursor-pointer font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded"
+            >
+              Terms of Service
+            </LocalizedClientLink>
+          </div>
         </div>
       </div>
     </footer>
