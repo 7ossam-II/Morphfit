@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap');
 
 @import "tailwindcss/base";
 @import "tailwindcss/components";
@@ -7,8 +7,8 @@
 :root {
   --color-primary: #F97316;
   --color-secondary: #FB923C;
-  --color-cta: #22C55E;
-  --color-background: #1F2937;
+  --color-cta: #F97316;
+  --color-background: #111827;
   --color-text: #F8FAFC;
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -24,7 +24,7 @@
 }
 
 body {
-  background-color: #1F2937;
+  background-color: #111827;
   color: #F8FAFC;
   font-family: 'Barlow', sans-serif;
 }
@@ -64,7 +64,7 @@ body {
   select:-webkit-autofill:focus {
     border: 1px solid #374151;
     -webkit-text-fill-color: #F8FAFC;
-    -webkit-box-shadow: 0 0 0px 1000px #1F2937 inset;
+    -webkit-box-shadow: 0 0 0px 1000px #111827 inset;
     transition: background-color 5000s ease-in-out 0s;
   }
 
