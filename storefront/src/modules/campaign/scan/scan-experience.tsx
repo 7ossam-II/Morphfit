@@ -43,11 +43,11 @@ const GYM_NAMES: Record<string, string> = {
 }
 
 const PRODUCTS = [
-  { src: "/products/gold_creatine.png", alt: "Gold Creatine" },
+  { src: "/products/creatine_caps.png", alt: "Microionized Creatine" },
   { src: "/products/tota_war.png",      alt: "Tota War Pre-Workout" },
   { src: "/products/whey.png",          alt: "Gold Standard Whey" },
   { src: "/products/c4.png",            alt: "C4 Original Pre-Workout" },
-  { src: "/products/creatine_caps.png", alt: "Microionized Creatine" },
+  { src: "/products/gold_creatine.png", alt: "Gold Creatine" },
   { src: "/products/magnesium.png",     alt: "Glycinate Magnesium" },
   { src: "/products/multivitamin.png",  alt: "One Daily Multivitamin" },
 ]
