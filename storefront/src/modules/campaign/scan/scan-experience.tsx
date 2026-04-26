@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import Link from "next/link"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { postQrScan, type GymLocationLite } from "@lib/campaign/client"
 import { getOrCreateDeviceId } from "@lib/campaign/device-id"
 
@@ -11,108 +11,33 @@ type Props = {
   initialGym: GymLocationLite
 }
 
-// ─── Social links ─────────────────────────────────────────────────────────────
 const INSTAGRAM_URL =
   "https://www.instagram.com/morphfit_bangladesh?igsh=MXhpYndqcHprbG9nZQ%3D%3D&utm_source=qr"
 const FACEBOOK_URL =
   "https://www.facebook.com/share/1W8N2bz7tF/?mibextid=wwXIfr"
 const WEBSITE_URL = "/coming-soon"
 
-// ─── Products ─────────────────────────────────────────────────────────────────
 const PRODUCTS = [
-  { src: "/products/whey.png",          name: "Gold Standard Whey",       tag: "Protein" },
-  { src: "/products/c4.png",            name: "C4 Original Pre-Workout",  tag: "Pre-Workout" },
-  { src: "/products/creatine_caps.png", name: "Microionized Creatine",    tag: "Strength" },
-  { src: "/products/gold_creatine.png", name: "Gold Creatine",            tag: "Strength" },
-  { src: "/products/tota_war.png",      name: "Tota War Pre-Workout",     tag: "Pre-Workout" },
-  { src: "/products/magnesium.png",     name: "Glycinate Magnesium",      tag: "Wellness" },
-  { src: "/products/multivitamin.png",  name: "One Daily Multivitamin",   tag: "Vitamins" },
+  { src: "/products/whey.png",          alt: "Gold Standard Whey" },
+  { src: "/products/c4.png",            alt: "C4 Original Pre-Workout" },
+  { src: "/products/creatine_caps.png", alt: "Microionized Creatine" },
+  { src: "/products/gold_creatine.png", alt: "Gold Creatine" },
+  { src: "/products/tota_war.png",      alt: "Tota War Pre-Workout" },
+  { src: "/products/magnesium.png",     alt: "Glycinate Magnesium" },
+  { src: "/products/multivitamin.png",  alt: "One Daily Multivitamin" },
 ]
 
-// ─── Instagram SVG logo ───────────────────────────────────────────────────────
-const InstagramIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-    <defs>
-      <radialGradient id="ig-grad" cx="30%" cy="107%" r="150%">
-        <stop offset="0%" stopColor="#fdf497" />
-        <stop offset="5%" stopColor="#fdf497" />
-        <stop offset="45%" stopColor="#fd5949" />
-        <stop offset="60%" stopColor="#d6249f" />
-        <stop offset="90%" stopColor="#285AEB" />
-      </radialGradient>
-    </defs>
-    <rect width="24" height="24" rx="6" fill="url(#ig-grad)" />
-    <circle cx="12" cy="12" r="4.5" stroke="white" strokeWidth="1.8" fill="none" />
-    <circle cx="17.5" cy="6.5" r="1.2" fill="white" />
-  </svg>
-)
-
-// ─── Facebook SVG logo ────────────────────────────────────────────────────────
-const FacebookIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-    <rect width="24" height="24" rx="6" fill="#1877F2" />
-    <path
-      d="M15.5 8H13.5C13.2 8 13 8.2 13 8.5V10H15.5L15.1 12.5H13V19H10.5V12.5H9V10H10.5V8.5C10.5 6.6 11.8 5.5 13.5 5.5C14.3 5.5 15.1 5.6 15.5 5.7V8Z"
-      fill="white"
-    />
-  </svg>
-)
-
-// ─── MorphFit M logo ──────────────────────────────────────────────────────────
-const MorphFitMIcon = () => (
-  <div
-    className="w-6 h-6 rounded-md grid place-items-center flex-shrink-0"
-    style={{
-      background: "linear-gradient(135deg, #F97316 0%, #ea6a0a 100%)",
-      boxShadow: "0 0 10px rgba(249,115,22,0.5)",
-    }}
-  >
-    <span className="font-black text-white text-sm leading-none" style={{ fontFamily: "inherit" }}>
-      M
-    </span>
-  </div>
-)
-
-// ─── Link definitions ─────────────────────────────────────────────────────────
-const LINKS = [
-  {
-    id: "instagram",
-    label: "Follow on Instagram",
-    sublabel: "@morphfit.bd",
-    href: INSTAGRAM_URL,
-    external: true,
-    icon: <InstagramIcon />,
-    gradient: "from-[#833ab4] via-[#fd1d1d] to-[#fcb045]",
-    ring: "focus-visible:ring-[#fd1d1d]",
-  },
-  {
-    id: "facebook",
-    label: "Like on Facebook",
-    sublabel: "MorphFit BD",
-    href: FACEBOOK_URL,
-    external: true,
-    icon: <FacebookIcon />,
-    gradient: "from-[#1877f2] to-[#0a5dc2]",
-    ring: "focus-visible:ring-[#1877f2]",
-  },
-  {
-    id: "website",
-    label: "Visit our website",
-    sublabel: "morphfit.com.bd",
-    href: WEBSITE_URL,
-    external: false,
-    icon: <MorphFitMIcon />,
-    gradient: "from-[#F97316] to-[#ea6a0a]",
-    ring: "focus-visible:ring-[#F97316]",
-  },
-]
-
-// ─── 3D Floating Product Carousel ─────────────────────────────────────────────
-function ProductCarousel() {
+export default function ScanExperience({ gymLocationId, initialGym }: Props) {
   const [active, setActive] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [direction, setDirection] = useState<"left" | "right">("right")
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Track scan on mount
+  useEffect(() => {
+    const deviceId = getOrCreateDeviceId()
+    postQrScan({ gymLocationId, deviceId }).catch(() => {})
+  }, [gymLocationId])
 
   const goTo = (idx: number, dir: "left" | "right") => {
     if (animating) return
@@ -124,377 +49,343 @@ function ProductCarousel() {
     }, 320)
   }
 
-  const next = () => {
-    const idx = (active + 1) % PRODUCTS.length
-    goTo(idx, "right")
-  }
+  const next = () => goTo((active + 1) % PRODUCTS.length, "right")
+  const prev = () => goTo((active - 1 + PRODUCTS.length) % PRODUCTS.length, "left")
 
-  const prev = () => {
-    const idx = (active - 1 + PRODUCTS.length) % PRODUCTS.length
-    goTo(idx, "left")
-  }
-
-  // Auto-advance every 3 s
   useEffect(() => {
-    intervalRef.current = setInterval(next, 3000)
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
+    intervalRef.current = setInterval(next, 3500)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [active, animating])
 
   const resetTimer = () => {
     if (intervalRef.current) clearInterval(intervalRef.current)
-    intervalRef.current = setInterval(next, 3000)
+    intervalRef.current = setInterval(next, 3500)
   }
 
-  const product = PRODUCTS[active]
-
-  // Slide-in transform based on direction
-  const enterFrom = direction === "right" ? "translateX(60px)" : "translateX(-60px)"
+  const gymName = initialGym?.name ?? "Your Gym"
+  const city = initialGym?.city ?? "Bangladesh"
 
   return (
-    <div className="w-full max-w-sm mx-auto select-none">
-      {/* Section header */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <p className="font-heading font-black text-xs uppercase tracking-[0.2em] text-white/40">
-          Our Products
-        </p>
-        <div className="flex gap-1.5">
-          {PRODUCTS.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                const dir = i > active ? "right" : "left"
-                goTo(i, dir)
-                resetTimer()
-              }}
-              className={`h-1 rounded-full transition-all duration-300 ${
-                i === active
-                  ? "w-5 bg-[#F97316]"
-                  : "w-1.5 bg-white/20 hover:bg-white/40"
-              }`}
-              aria-label={`Go to product ${i + 1}`}
-            />
-          ))}
-        </div>
+    <div style={{
+      minHeight: "100dvh",
+      background: "linear-gradient(180deg, #081f14 0%, #0d3b28 35%, #0a2e1f 70%, #081f14 100%)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      overflowX: "hidden",
+      position: "relative",
+    }}>
+
+      {/* ── LOGO ── */}
+      <div style={{ paddingTop: "40px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", zIndex: 10 }}>
+        <svg width="48" height="40" viewBox="0 0 52 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 44V0L13 0L26 22L39 0L52 0V44H40V18L26 40L12 18V44H0Z" fill="white"/>
+        </svg>
+        <span style={{ color: "white", fontSize: "12px", fontWeight: 900, letterSpacing: "0.38em", fontFamily: "'Arial Black', Arial, sans-serif" }}>
+          MORPHFIT
+        </span>
       </div>
 
-      {/* Card */}
-      <div
-        className="relative rounded-3xl overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow:
-            "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)",
-        }}
-      >
-        {/* Glow behind product */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(55% 55% at 50% 60%, rgba(249,115,22,0.18) 0%, transparent 70%)",
-          }}
-        />
+      {/* ── GYM BADGE ── */}
+      <div style={{
+        marginTop: "14px",
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        borderRadius: "100px",
+        padding: "6px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        zIndex: 10,
+      }}>
+        <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", display: "inline-block", flexShrink: 0 }} />
+        <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "12px", fontWeight: 700, letterSpacing: "0.04em", fontFamily: "Arial, sans-serif" }}>
+          {gymName}
+        </span>
+        <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", fontFamily: "Arial, sans-serif" }}>
+          {city}
+        </span>
+      </div>
 
-        {/* Product image area */}
-        <div className="relative h-52 flex items-end justify-center px-6 pt-4">
+      {/* ── HERO: 4x MORPHFIT text + floating product ── */}
+      <div style={{ position: "relative", width: "100%", marginTop: "28px" }}>
+
+        {/* 4 rows of giant text */}
+        <div style={{ userSelect: "none", pointerEvents: "none", lineHeight: 0.88, overflow: "hidden" }}>
+          {["MORPHFIT", "MORPHFIT", "MORPHFIT", "MORPHFIT"].map((word, i) => (
+            <div key={i} style={{
+              width: "100%",
+              textAlign: "center",
+              fontSize: "clamp(56px, 19.5vw, 96px)",
+              fontWeight: 900,
+              color: (i === 1 || i === 2) ? "rgba(255,255,255,0.13)" : "rgba(255,255,255,0.06)",
+              letterSpacing: "-0.02em",
+              fontFamily: "'Arial Black', Impact, sans-serif",
+              whiteSpace: "nowrap",
+            }}>
+              {word}
+            </div>
+          ))}
+        </div>
+
+        {/* Product floating over text */}
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "min(68vw, 280px)",
+          height: "min(68vw, 280px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 20,
+        }}>
+          {/* Red circle glow — poster style */}
+          <div style={{
+            position: "absolute",
+            width: "min(54vw, 220px)",
+            height: "min(54vw, 220px)",
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(210,30,30,0.6) 0%, rgba(180,20,20,0.28) 55%, transparent 100%)",
+            filter: "blur(2px)",
+          }} />
+
+          {/* Product image */}
           <div
             key={active}
             style={{
+              position: "relative",
+              zIndex: 1,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               animation: animating
-                ? `slideOut${direction === "right" ? "Left" : "Right"} 0.32s ease forwards`
-                : "floatProduct 4s ease-in-out infinite, fadeSlideIn 0.35s ease forwards",
-              transformOrigin: "center bottom",
-              filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.6)) drop-shadow(0 0 20px rgba(249,115,22,0.15))",
+                ? `slideIn${direction === "right" ? "Right" : "Left"} 0.32s ease forwards`
+                : "floatProduct 3.5s ease-in-out infinite",
+              filter: "drop-shadow(0 24px 48px rgba(0,0,0,0.75))",
             }}
-            className="relative w-full h-full flex items-end justify-center"
           >
             <Image
-              src={product.src}
-              alt={product.name}
-              width={220}
-              height={220}
-              className="object-contain max-h-[200px] w-auto"
+              src={PRODUCTS[active].src}
+              alt={PRODUCTS[active].alt}
+              width={260}
+              height={260}
+              style={{ objectFit: "contain", maxWidth: "100%", maxHeight: "100%" }}
               priority
-              style={{ imageRendering: "crisp-edges" }}
             />
-          </div>
-        </div>
-
-        {/* Product info */}
-        <div className="px-5 pb-4 pt-3 flex items-center justify-between">
-          <div>
-            <span
-              className="inline-block text-[10px] font-heading font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full mb-1"
-              style={{
-                background: "rgba(249,115,22,0.15)",
-                color: "#F97316",
-                border: "1px solid rgba(249,115,22,0.25)",
-              }}
-            >
-              {product.tag}
-            </span>
-            <p className="font-heading font-bold text-sm text-white leading-tight">
-              {product.name}
-            </p>
-          </div>
-
-          {/* Nav arrows */}
-          <div className="flex gap-2 flex-shrink-0">
-            <button
-              onClick={() => { prev(); resetTimer() }}
-              className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.04] grid place-items-center hover:bg-white/10 active:scale-95 transition-all duration-150"
-              aria-label="Previous product"
-            >
-              <svg className="w-3.5 h-3.5 text-white/60" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-              </svg>
-            </button>
-            <button
-              onClick={() => { next(); resetTimer() }}
-              className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.04] grid place-items-center hover:bg-white/10 active:scale-95 transition-all duration-150"
-              aria-label="Next product"
-            >
-              <svg className="w-3.5 h-3.5 text-white/60" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-              </svg>
-            </button>
           </div>
         </div>
       </div>
 
-      {/* Keyframe styles */}
+      {/* ── CAROUSEL CONTROLS ── */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "16px",
+        marginTop: "20px",
+        zIndex: 30,
+      }}>
+        <button
+          onClick={() => { prev(); resetTimer() }}
+          aria-label="Previous product"
+          style={{
+            background: "rgba(255,255,255,0.07)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "50%",
+            width: 34,
+            height: 34,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "rgba(255,255,255,0.7)",
+            fontSize: "18px",
+            lineHeight: 1,
+          }}
+        >‹</button>
+
+        <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+          {PRODUCTS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => { goTo(i, i > active ? "right" : "left"); resetTimer() }}
+              aria-label={`Go to product ${i + 1}`}
+              style={{
+                width: i === active ? 18 : 5,
+                height: 5,
+                borderRadius: 3,
+                background: i === active ? "#cc2020" : "rgba(255,255,255,0.2)",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                transition: "width 0.3s ease, background 0.3s ease",
+              }}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={() => { next(); resetTimer() }}
+          aria-label="Next product"
+          style={{
+            background: "rgba(255,255,255,0.07)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "50%",
+            width: 34,
+            height: 34,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "rgba(255,255,255,0.7)",
+            fontSize: "18px",
+            lineHeight: 1,
+          }}
+        >›</button>
+      </div>
+
+      {/* ── SOCIAL LINKS ── */}
+      <div style={{
+        width: "100%",
+        maxWidth: "400px",
+        padding: "36px 22px 32px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "11px",
+        zIndex: 10,
+      }}>
+        {/* Instagram */}
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "13px 16px",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.09)",
+            borderRadius: "14px",
+            textDecoration: "none",
+          }}
+        >
+          <div style={{
+            width: 40, height: 40, borderRadius: "12px", flexShrink: 0,
+            background: "linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "white", fontWeight: 700, fontSize: "13px", fontFamily: "Arial, sans-serif", letterSpacing: "0.04em" }}>FOLLOW ON INSTAGRAM</div>
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>@morphfit.bd</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </a>
+
+        {/* Facebook */}
+        <a
+          href={FACEBOOK_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "13px 16px",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.09)",
+            borderRadius: "14px",
+            textDecoration: "none",
+          }}
+        >
+          <div style={{
+            width: 40, height: 40, borderRadius: "12px", flexShrink: 0,
+            background: "#1877F2",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "white", fontWeight: 700, fontSize: "13px", fontFamily: "Arial, sans-serif", letterSpacing: "0.04em" }}>LIKE ON FACEBOOK</div>
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>MorphFit BD</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </a>
+
+        {/* Website */}
+        <Link
+          href={WEBSITE_URL}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "13px 16px",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.09)",
+            borderRadius: "14px",
+            textDecoration: "none",
+          }}
+        >
+          <div style={{
+            width: 40, height: 40, borderRadius: "12px", flexShrink: 0,
+            background: "#0d3b28",
+            border: "1px solid rgba(255,255,255,0.18)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <svg width="20" height="17" viewBox="0 0 52 44" fill="white">
+              <path d="M0 44V0L13 0L26 22L39 0L52 0V44H40V18L26 40L12 18V44H0Z"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "white", fontWeight: 700, fontSize: "13px", fontFamily: "Arial, sans-serif", letterSpacing: "0.04em" }}>VISIT OUR WEBSITE</div>
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>morphfit.com.bd</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </Link>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        paddingBottom: "28px",
+        color: "rgba(255,255,255,0.18)",
+        fontSize: "9px",
+        letterSpacing: "0.18em",
+        fontFamily: "Arial, sans-serif",
+        textAlign: "center",
+      }}>
+        © MORPHFIT · DHAKA, BANGLADESH
+      </div>
+
+      {/* Animations */}
       <style>{`
         @keyframes floatProduct {
           0%, 100% { transform: translateY(0px) scale(1); }
-          50%       { transform: translateY(-8px) scale(1.02); }
+          50% { transform: translateY(-14px) scale(1.025); }
         }
-        @keyframes fadeSlideIn {
-          from { opacity: 0; transform: translateX(${direction === "right" ? "50px" : "-50px"}); }
-          to   { opacity: 1; transform: translateX(0); }
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(70px) scale(0.9); }
+          to { opacity: 1; transform: translateX(0) scale(1); }
         }
-        @keyframes slideOutLeft {
-          from { opacity: 1; transform: translateX(0); }
-          to   { opacity: 0; transform: translateX(-50px); }
-        }
-        @keyframes slideOutRight {
-          from { opacity: 1; transform: translateX(0); }
-          to   { opacity: 0; transform: translateX(50px); }
+        @keyframes slideInLeft {
+          from { opacity: 0; transform: translateX(-70px) scale(0.9); }
+          to { opacity: 1; transform: translateX(0) scale(1); }
         }
       `}</style>
-    </div>
-  )
-}
-
-// ─── Main component ────────────────────────────────────────────────────────────
-export default function ScanExperience({ gymLocationId, initialGym }: Props) {
-  const recordedRef = useRef(false)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    if (recordedRef.current) return
-    recordedRef.current = true
-    const deviceId = getOrCreateDeviceId()
-    postQrScan({ gym_location_id: gymLocationId, device_id: deviceId, source: "qr" })
-    const t = setTimeout(() => setVisible(true), 80)
-    return () => clearTimeout(t)
-  }, [gymLocationId])
-
-  const gymName = initialGym?.name ?? "Your Gym"
-  const gymCity = initialGym?.area
-    ? `${initialGym.area}, ${initialGym.city}`
-    : (initialGym?.city ?? "Bangladesh")
-
-  return (
-    <div className="relative min-h-[100svh] bg-[#0b1220] text-white overflow-hidden flex flex-col">
-
-      {/* ── Background layers ── */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        aria-hidden
-        style={{
-          background:
-            "radial-gradient(65% 55% at 50% -5%, rgba(249,115,22,0.30) 0%, transparent 65%), radial-gradient(55% 45% at 50% 105%, rgba(34,197,94,0.15) 0%, transparent 65%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-        aria-hidden
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-          maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full opacity-15 blur-3xl"
-        aria-hidden
-        style={{ background: "radial-gradient(circle, #F97316 0%, transparent 70%)" }}
-      />
-
-      {/* ── Content ── */}
-      <main
-        className={`relative flex flex-col items-center justify-center flex-1 px-5 py-10 gap-6 transition-all duration-700 ease-out ${
-          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-        }`}
-      >
-        {/* Brand logo mark */}
-        <div className="flex flex-col items-center gap-2">
-          <div
-            className="w-16 h-16 rounded-2xl grid place-items-center shadow-2xl"
-            style={{
-              background: "linear-gradient(135deg, #F97316 0%, #ea6a0a 100%)",
-              boxShadow: "0 0 40px rgba(249,115,22,0.45), 0 8px 32px rgba(0,0,0,0.5)",
-            }}
-          >
-            <span className="font-heading font-black text-3xl text-white tracking-tight">M</span>
-          </div>
-          <div className="text-center">
-            <p className="font-heading font-black text-xl uppercase tracking-[0.12em] text-white">
-              MorphFit
-            </p>
-            <p className="text-white/50 text-[11px] font-sans mt-0.5 tracking-wide">
-              Premium supplements · Built for Bangladesh
-            </p>
-          </div>
-        </div>
-
-        {/* Gym badge */}
-        <div
-          className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.06] backdrop-blur-sm px-4 py-2"
-          style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)" }}
-        >
-          <span className="w-2 h-2 rounded-full bg-[#F97316] animate-pulse flex-shrink-0" />
-          <span className="font-heading font-semibold uppercase tracking-[0.18em] text-xs text-white/80">
-            {gymName}
-          </span>
-          <span className="text-white/30 text-xs">·</span>
-          <span className="text-white/50 text-xs font-sans">{gymCity}</span>
-        </div>
-
-        {/* 3D Product Carousel */}
-        <div
-          style={{
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateY(0)" : "translateY(16px)",
-            transition: "opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s",
-            width: "100%",
-          }}
-        >
-          <ProductCarousel />
-        </div>
-
-        {/* Headline */}
-        <div className="text-center max-w-xs">
-          <h1 className="font-heading font-black text-3xl uppercase leading-[0.92] mb-2">
-            Fuel your
-            <br />
-            <span style={{ color: "#F97316" }}>transformation</span>
-          </h1>
-          <p className="font-sans text-white/55 text-xs leading-relaxed">
-            Lab-tested supplements priced in taka. Follow us, join the waitlist,
-            or check out the store.
-          </p>
-        </div>
-
-        {/* Social / Link buttons */}
-        <div className="w-full max-w-sm flex flex-col gap-3">
-          {LINKS.map((link, i) => {
-            const inner = (
-              <div
-                className={`
-                  group relative w-full flex items-center gap-4 rounded-2xl px-5 py-4
-                  border border-white/10 bg-white/[0.04] backdrop-blur-sm
-                  hover:border-white/20 hover:bg-white/[0.08]
-                  active:scale-[0.98]
-                  transition-all duration-200 ease-out cursor-pointer
-                  focus:outline-none focus-visible:ring-2 ${link.ring} focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1220]
-                `}
-                style={{
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-                }}
-              >
-                {/* Icon container */}
-                <div
-                  className={`
-                    w-11 h-11 rounded-xl flex-shrink-0 grid place-items-center text-white
-                    bg-gradient-to-br ${link.gradient}
-                    shadow-lg group-hover:shadow-xl transition-shadow duration-200
-                  `}
-                >
-                  {link.icon}
-                </div>
-
-                {/* Text */}
-                <div className="flex-1 text-left">
-                  <p className="font-heading font-bold text-sm uppercase tracking-wide text-white leading-tight">
-                    {link.label}
-                  </p>
-                  <p className="text-white/45 text-xs font-sans mt-0.5">
-                    {link.sublabel}
-                  </p>
-                </div>
-
-                {/* Arrow */}
-                <svg
-                  className="w-4 h-4 text-white/30 group-hover:text-white/70 group-hover:translate-x-0.5 transition-all duration-200 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                </svg>
-              </div>
-            )
-
-            return link.external ? (
-              <a
-                key={link.id}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-                style={{
-                  opacity: visible ? 1 : 0,
-                  transform: visible ? "translateY(0)" : "translateY(12px)",
-                  transition: `opacity 0.5s ease ${0.35 + i * 0.08}s, transform 0.5s ease ${0.35 + i * 0.08}s`,
-                }}
-              >
-                {inner}
-              </a>
-            ) : (
-              <Link
-                key={link.id}
-                href={link.href}
-                className="block"
-                style={{
-                  opacity: visible ? 1 : 0,
-                  transform: visible ? "translateY(0)" : "translateY(12px)",
-                  transition: `opacity 0.5s ease ${0.35 + i * 0.08}s, transform 0.5s ease ${0.35 + i * 0.08}s`,
-                }}
-              >
-                {inner}
-              </Link>
-            )
-          })}
-        </div>
-
-        {/* Sticker code watermark */}
-        <p className="text-[10px] font-heading uppercase tracking-[0.3em] text-white/20">
-          {initialGym?.sticker_code ?? gymLocationId.slice(0, 8)}
-        </p>
-      </main>
-
-      {/* Footer */}
-      <footer className="relative text-center pb-6 text-[10px] font-heading uppercase tracking-[0.25em] text-white/25">
-        © MorphFit · Dhaka, Bangladesh
-      </footer>
     </div>
   )
 }
