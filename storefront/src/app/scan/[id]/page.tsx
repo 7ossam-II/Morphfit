@@ -11,30 +11,31 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
+  const { gym_location } = await fetchCampaignStats(id)
+  const gymName = gym_location?.name ?? "Your Gym"
+
   return {
-    title: `MorphFit · Scan ${id}`,
+    title: `MorphFit · ${gymName}`,
     description:
-      "You scanned a MorphFit sticker. Join the waitlist, claim launch-day pricing, and watch the gym light up live.",
+      "Premium supplements built for Bangladeshi athletes. Lab-tested, locally priced, delivered in 48 hours.",
     robots: { index: false, follow: false },
     openGraph: {
-      title: "MorphFit · You unlocked the gym",
+      title: `MorphFit × ${gymName}`,
       description:
-        "Premium supplements built for Bangladeshi athletes. Lab-tested, locally priced, fast delivery.",
+        "Follow us on Instagram, like us on Facebook, or join the pre-launch waitlist.",
     },
-    viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
     themeColor: "#0b1220",
   }
 }
 
 export default async function ScanPage({ params }: Props) {
   const { id } = await params
-  const { gym_location, stats } = await fetchCampaignStats(id)
+  const { gym_location } = await fetchCampaignStats(id)
 
   return (
     <ScanExperience
       gymLocationId={id}
       initialGym={gym_location}
-      initialStats={stats}
     />
   )
 }

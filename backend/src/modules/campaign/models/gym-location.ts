@@ -15,6 +15,8 @@ const GymLocation = model.define("gym_location", {
   is_active: model.boolean().default(true),
   // Internal reference shown on the printed sticker, e.g. "DHK-001"
   sticker_code: model.text().unique(),
+  // Google Maps short link for the gym
+  maps_url: model.text().nullable(),
   notes: model.text().nullable(),
 })
 
