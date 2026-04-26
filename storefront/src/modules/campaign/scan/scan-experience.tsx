@@ -10,10 +10,9 @@ type Props = {
   initialGym: GymLocationLite
 }
 
-// ─── Social links ─────────────────────────────────────────────────────────────
-// Update these to the real handles once the accounts are live.
-const INSTAGRAM_URL = "https://www.instagram.com/morphfit.bd"
-const FACEBOOK_URL = "https://www.facebook.com/morphfit.bd"
+//// ─── Social links ─────────────────────────────────────────────────────────
+const INSTAGRAM_URL = "https://www.instagram.com/morphfit_bangladesh?igsh=MXhpYndqcHprbG9nZQ%3D%3D&utm_source=qr"
+const FACEBOOK_URL = "https://www.facebook.com/share/1W8N2bz7tF/?mibextid=wwXIfr"
 const WEBSITE_URL = "/coming-soon"
 
 // ─── Link definitions ─────────────────────────────────────────────────────────
