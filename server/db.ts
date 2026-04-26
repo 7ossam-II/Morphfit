@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, gymLocations, qrScans, emailSignups } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,89 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function seedGymLocations() {
+  const db = await getDb();
+  if (!db) return;
+  
+  const locations = [
+    { name: "Rigan Fitness", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Fame Fitness", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Pears body building centre", address: "Uttara, Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Cherry Drops", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Fitness Plus", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "South Pacific Health Club", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Xtreme Fitness", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Muscle and Fitness Arena", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Fitlife Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Riverview Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Hammer Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Being Strong Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Fitness Factory", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Esporta Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Radical Fit Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Golden Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Fit Revolution", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Gifairy Fitness", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Metro Fitness", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "My Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "CrossFit Gym", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+    { name: "Fitness Science", address: "Dhaka", redirectUrl: "https://morphfit.shop" },
+  ];
+  
+  try {
+    for (const location of locations) {
+      await db.insert(gymLocations).values(location);
+    }
+    console.log("[Database] Seeded 22 gym locations");
+  } catch (error) {
+    console.error("[Database] Error seeding locations:", error);
+  }
+}
+
+export async function getGymLocations() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(gymLocations);
+}
+
+export async function getGymLocationById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(gymLocations).where(eq(gymLocations.id, id)).limit(1);
+  return result[0];
+}
+
+export async function logQrScan(locationId: number, redirectDestination?: string, userAgent?: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.insert(qrScans).values({
+    locationId,
+    redirectDestination,
+    userAgent,
+  });
+  return result;
+}
+
+export async function getQrScansByLocation(locationId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(qrScans).where(eq(qrScans.locationId, locationId));
+}
+
+export async function getAllQrScans() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(qrScans);
+}
+
+export async function addEmailSignup(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  try {
+    const result = await db.insert(emailSignups).values({ email });
+    return result;
+  } catch (error) {
+    console.error("[Database] Email already exists or error:", error);
+    return undefined;
+  }
+}

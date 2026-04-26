@@ -25,4 +25,33 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+export const gymLocations = mysqlTable("gym_locations", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  address: text("address"),
+  redirectUrl: varchar("redirectUrl", { length: 512 }).default("https://morphfit.shop"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type GymLocation = typeof gymLocations.$inferSelect;
+export type InsertGymLocation = typeof gymLocations.$inferInsert;
+
+export const qrScans = mysqlTable("qr_scans", {
+  id: int("id").autoincrement().primaryKey(),
+  locationId: int("locationId").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  redirectDestination: varchar("redirectDestination", { length: 512 }),
+  userAgent: text("userAgent"),
+});
+
+export type QrScan = typeof qrScans.$inferSelect;
+export type InsertQrScan = typeof qrScans.$inferInsert;
+
+export const emailSignups = mysqlTable("email_signups", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EmailSignup = typeof emailSignups.$inferSelect;
+export type InsertEmailSignup = typeof emailSignups.$inferInsert;
