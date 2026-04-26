@@ -6,6 +6,8 @@ import CategoryShowcase from "@modules/home/components/category-showcase"
 import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "MorphFit — Premium Supplements & Workout Gear",
   description:
