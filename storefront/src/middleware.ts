@@ -10,63 +10,64 @@ const regionMapCache = {
   regionMapUpdated: Date.now(),
 }
 
+/**
+ * Top-level launch routes that must NEVER be redirected through the
+ * [countryCode] segment. These render globally during the pre-launch sprint.
+ */
+function isTopLevelLaunchRoute(pathname: string): boolean {
+  if (pathname === "/" || pathname === "/coming-soon") return true
+  if (pathname === "/scan" || pathname.startsWith("/scan/")) return true
+  return false
+}
+
 async function getRegionMap(cacheId: string) {
   const { regionMap, regionMapUpdated } = regionMapCache
 
   if (!BACKEND_URL) {
-    throw new Error(
-      "Middleware.ts: Error fetching regions. Did you set up regions in your Medusa Admin and define a MEDUSA_BACKEND_URL environment variable? Note that the variable is no longer named NEXT_PUBLIC_MEDUSA_BACKEND_URL."
-    )
+    // During the launch sprint we still want top-level routes to render
+    // even if the backend is not configured. Returning the empty map
+    // lets the middleware short-circuit gracefully.
+    return regionMap
   }
 
   if (
     !regionMap.keys().next().value ||
     regionMapUpdated < Date.now() - 3600 * 1000
   ) {
-    // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
-    const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        "x-publishable-api-key": PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-        tags: [`regions-${cacheId}`],
-      },
-      cache: "force-cache",
-    }).then(async (response) => {
-      const json = await response.json()
-
-      if (!response.ok) {
-        throw new Error(json.message)
-      }
-
-      return json
-    })
-
-    if (!regions?.length) {
-      throw new Error(
-        "No regions found. Please set up regions in your Medusa Admin."
-      )
-    }
-
-    // Create a map of country codes to regions.
-    regions.forEach((region: HttpTypes.StoreRegion) => {
-      region.countries?.forEach((c) => {
-        regionMapCache.regionMap.set(c.iso_2 ?? "", region)
+    try {
+      const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
+        headers: {
+          "x-publishable-api-key": PUBLISHABLE_API_KEY!,
+        },
+        next: {
+          revalidate: 3600,
+          tags: [`regions-${cacheId}`],
+        },
+        cache: "force-cache",
+      }).then(async (response) => {
+        const json = await response.json()
+        if (!response.ok) {
+          throw new Error(json.message)
+        }
+        return json
       })
-    })
 
-    regionMapCache.regionMapUpdated = Date.now()
+      if (regions?.length) {
+        regions.forEach((region: HttpTypes.StoreRegion) => {
+          region.countries?.forEach((c) => {
+            regionMapCache.regionMap.set(c.iso_2 ?? "", region)
+          })
+        })
+        regionMapCache.regionMapUpdated = Date.now()
+      }
+    } catch {
+      // Swallow: top-level routes still work without a backend.
+    }
   }
 
   return regionMapCache.regionMap
 }
 
-/**
- * Fetches regions from Medusa and sets the region cookie.
- * @param request
- * @param response
- */
 async function getCountryCode(
   request: NextRequest,
   regionMap: Map<string, HttpTypes.StoreRegion | number>
@@ -91,71 +92,58 @@ async function getCountryCode(
     }
 
     return countryCode
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error(
-        "Middleware.ts: Error getting the country code. Did you set up regions in your Medusa Admin and define a MEDUSA_BACKEND_URL environment variable? Note that the variable is no longer named NEXT_PUBLIC_MEDUSA_BACKEND_URL."
-      )
-    }
+  } catch {
+    return undefined
   }
 }
 
 /**
- * Middleware to handle region selection and onboarding status.
+ * Middleware to handle region selection while leaving the launch sprint's
+ * top-level routes (/, /coming-soon, /scan/:id) untouched.
  */
 export async function middleware(request: NextRequest) {
-  let redirectUrl = request.nextUrl.href
+  let response = NextResponse.next()
 
-  let response = NextResponse.redirect(redirectUrl, 307)
+  // 1. Static assets — pass-through.
+  if (request.nextUrl.pathname.includes(".")) {
+    return NextResponse.next()
+  }
 
-  let cacheIdCookie = request.cookies.get("_medusa_cache_id")
+  // 2. Launch routes — pass-through, never region-prefixed.
+  if (isTopLevelLaunchRoute(request.nextUrl.pathname)) {
+    return NextResponse.next()
+  }
 
-  let cacheId = cacheIdCookie?.value || crypto.randomUUID()
-
+  const cacheIdCookie = request.cookies.get("_medusa_cache_id")
+  const cacheId = cacheIdCookie?.value || crypto.randomUUID()
   const regionMap = await getRegionMap(cacheId)
-
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
 
   const urlHasCountryCode =
     countryCode && request.nextUrl.pathname.split("/")[1].includes(countryCode)
 
-  // if one of the country codes is in the url and the cache id is set, return next
   if (urlHasCountryCode && cacheIdCookie) {
     return NextResponse.next()
   }
 
-  // if one of the country codes is in the url and the cache id is not set, set the cache id and redirect
   if (urlHasCountryCode && !cacheIdCookie) {
     response.cookies.set("_medusa_cache_id", cacheId, {
       maxAge: 60 * 60 * 24,
     })
-
     return response
-  }
-
-  // check if the url is a static asset
-  if (request.nextUrl.pathname.includes(".")) {
-    return NextResponse.next()
   }
 
   const redirectPath =
     request.nextUrl.pathname === "/" ? "" : request.nextUrl.pathname
-
   const queryString = request.nextUrl.search ? request.nextUrl.search : ""
 
-  // If no country code is set, we redirect to the relevant region.
   if (!urlHasCountryCode && countryCode) {
-    redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
-    response = NextResponse.redirect(`${redirectUrl}`, 307)
-  } else if (!urlHasCountryCode && !countryCode) {
-    // Handle case where no valid country code exists (empty regions)
-    return new NextResponse(
-      "No valid regions configured. Please set up regions with countries in your Medusa Admin.",
-      { status: 500 }
-    )
+    const redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
+    return NextResponse.redirect(redirectUrl, 307)
   }
 
-  return response
+  // No regions configured AND not a launch route → fall back to /coming-soon.
+  return NextResponse.redirect(`${request.nextUrl.origin}/coming-soon`, 307)
 }
 
 export const config = {
