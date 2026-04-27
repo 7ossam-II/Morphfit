@@ -53,6 +53,8 @@ const PRODUCTS = [
 ]
 
 const TRANSITION_MS = 550
+// Minimum px drag to register as a swipe
+const SWIPE_THRESHOLD = 40
 
 export default function ScanExperience({ gymLocationId, initialGym }: Props) {
   const [current, setCurrent] = useState(0)
@@ -60,6 +62,11 @@ export default function ScanExperience({ gymLocationId, initialGym }: Props) {
   const [direction, setDirection] = useState<"left" | "right">("right")
   const [transitioning, setTransitioning] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Touch tracking refs
+  const touchStartX = useRef<number | null>(null)
+  const touchStartY = useRef<number | null>(null)
+  const isDragging = useRef(false)
 
   useEffect(() => {
     const deviceId = getOrCreateDeviceId()
@@ -95,6 +102,48 @@ export default function ScanExperience({ gymLocationId, initialGym }: Props) {
     resetTimer()
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   }, [resetTimer])
+
+  // ── Touch handlers ──────────────────────────────────────────────────────────
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
+    isDragging.current = false
+  }, [])
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return
+    const dx = e.touches[0].clientX - touchStartX.current
+    const dy = e.touches[0].clientY - touchStartY.current
+    // Only mark as horizontal drag if horizontal movement dominates
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+      isDragging.current = true
+      e.preventDefault() // prevent page scroll while swiping carousel
+    }
+  }, [])
+
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    if (isDragging.current && Math.abs(dx) >= SWIPE_THRESHOLD) {
+      if (dx < 0) { next(); resetTimer() }
+      else         { prevSlide(); resetTimer() }
+    }
+    touchStartX.current = null
+    touchStartY.current = null
+    isDragging.current = false
+  }, [next, prevSlide, resetTimer])
+
+  // ── Click handler (tap left/right half) ────────────────────────────────────
+  const onCarouselClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // Don't fire click if the user was swiping
+    if (isDragging.current) return
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    if (e.clientX - rect.left < rect.width / 2) {
+      prevSlide(); resetTimer()
+    } else {
+      next(); resetTimer()
+    }
+  }, [next, prevSlide, resetTimer])
 
   const gymName = GYM_NAMES[gymLocationId] ?? initialGym?.name ?? "MorphFit Gym"
   const city = initialGym?.city ?? "Bangladesh"
@@ -142,17 +191,17 @@ export default function ScanExperience({ gymLocationId, initialGym }: Props) {
       </div>
 
       {/* HERO: 4x MORPHFIT text + product carousel */}
-      <div style={{ position: "relative", width: "100%", marginTop: "24px", userSelect: "none" }}>
+      <div style={{ position: "relative", width: "100%", marginTop: "20px", userSelect: "none" }}>
 
-        {/* 4 rows of giant background text */}
-        <div style={{ pointerEvents: "none", lineHeight: 0.88, overflow: "hidden" }}>
+        {/* 4 rows of giant background text — bigger, fills more vertical space */}
+        <div style={{ pointerEvents: "none", lineHeight: 0.9, overflow: "hidden" }}>
           {["MORPHFIT", "MORPHFIT", "MORPHFIT", "MORPHFIT"].map((word, i) => (
             <div key={i} style={{
               width: "100%",
               textAlign: "center",
-              fontSize: "clamp(56px, 19.5vw, 96px)",
+              fontSize: "clamp(72px, 24vw, 128px)",
               fontWeight: 900,
-              color: (i === 1 || i === 2) ? "rgba(255,255,255,0.13)" : "rgba(255,255,255,0.06)",
+              color: (i === 1 || i === 2) ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.06)",
               letterSpacing: "-0.02em",
               fontFamily: "'Arial Black', Impact, sans-serif",
               whiteSpace: "nowrap",
@@ -162,7 +211,7 @@ export default function ScanExperience({ gymLocationId, initialGym }: Props) {
           ))}
         </div>
 
-        {/* Carousel overlay */}
+        {/* Carousel overlay — touch + click support, NO red glow circle */}
         <div
           style={{
             position: "absolute",
@@ -171,29 +220,14 @@ export default function ScanExperience({ gymLocationId, initialGym }: Props) {
             alignItems: "center",
             justifyContent: "center",
             overflow: "hidden",
-            cursor: "pointer",
+            cursor: "grab",
+            touchAction: "pan-y", // allow vertical scroll, we handle horizontal
           }}
-          onClick={(e) => {
-            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-            if (e.clientX - rect.left < rect.width / 2) {
-              prevSlide(); resetTimer()
-            } else {
-              next(); resetTimer()
-            }
-          }}
+          onClick={onCarouselClick}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
-          {/* Red glow circle */}
-          <div style={{
-            position: "absolute",
-            width: "min(260px, 72vw)",
-            height: "min(260px, 72vw)",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(200,25,25,0.68) 0%, rgba(160,15,15,0.38) 50%, transparent 75%)",
-            filter: "blur(3px)",
-            zIndex: 1,
-            pointerEvents: "none",
-          }} />
-
           {/* Outgoing product */}
           {prevIdx !== null && (
             <div
@@ -211,8 +245,8 @@ export default function ScanExperience({ gymLocationId, initialGym }: Props) {
                 height={340}
                 style={{
                   objectFit: "contain",
-                  width: "min(230px, 64vw)",
-                  height: "min(290px, 80vw)",
+                  width: "min(240px, 66vw)",
+                  height: "min(300px, 83vw)",
                   filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.7))",
                 }}
               />
@@ -237,9 +271,9 @@ export default function ScanExperience({ gymLocationId, initialGym }: Props) {
               height={340}
               style={{
                 objectFit: "contain",
-                width: "min(230px, 64vw)",
-                height: "min(290px, 80vw)",
-                filter: "drop-shadow(0 28px 56px rgba(0,0,0,0.85)) drop-shadow(0 0 24px rgba(210,30,30,0.22))",
+                width: "min(240px, 66vw)",
+                height: "min(300px, 83vw)",
+                filter: "drop-shadow(0 28px 56px rgba(0,0,0,0.85))",
               }}
               priority
             />

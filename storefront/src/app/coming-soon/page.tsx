@@ -22,7 +22,7 @@ function getLaunchAtIso(): string {
   if (fromEnv && !Number.isNaN(new Date(fromEnv).getTime())) {
     return new Date(fromEnv).toISOString()
   }
-  const fallback = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+  const fallback = new Date(Date.now() + 16 * 60 * 60 * 1000)
   return fallback.toISOString()
 }
 
