@@ -14,15 +14,12 @@ type SignupState =
   | { status: "error"; message: string }
 
 // ─── Typewriter config ───────────────────────────────────────────────────────
-// Sequence: type "MORPHFIT" → pause → delete char by char → type "MORPHFIT?"
-// → pause → delete → type "MORPHFIT!" → pause → delete → type "MORPHFIT."
-// → pause → reveal email section
 const BASE = "MORPHFIT"
 const VARIANTS = ["MORPHFIT", "MORPHFIT?", "MORPHFIT!", "MORPHFIT."]
-const TYPE_SPEED = 90   // ms per character typed
-const DELETE_SPEED = 55 // ms per character deleted
-const PAUSE_FULL = 1100 // ms to pause when word is fully typed
-const PAUSE_EMPTY = 220 // ms to pause when fully deleted before next word
+const TYPE_SPEED = 90
+const DELETE_SPEED = 55
+const PAUSE_FULL = 1100
+const PAUSE_EMPTY = 220
 
 // ─── Countdown helper ────────────────────────────────────────────────────────
 function diffParts(target: number, now: number) {
@@ -34,11 +31,177 @@ function diffParts(target: number, now: number) {
   return { days, hours, minutes, seconds, isLive: total === 0 }
 }
 
+// ─── Success Modal ────────────────────────────────────────────────────────────
+function SuccessModal({ already, onClose }: { already: boolean; onClose: () => void }) {
+  // Close on Escape key
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [onClose])
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 z-50"
+        style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
+        aria-hidden
+      />
+
+      {/* Modal panel */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="success-title"
+        className="fixed inset-0 z-50 flex items-center justify-center px-5"
+      >
+        <div
+          className="relative w-full max-w-sm rounded-2xl px-8 py-10 flex flex-col items-center text-center"
+          style={{
+            background: "linear-gradient(160deg, #0d3b28 0%, #081f14 100%)",
+            border: "1px solid rgba(42,160,70,0.35)",
+            boxShadow: "0 0 60px rgba(42,160,70,0.18), 0 24px 60px rgba(0,0,0,0.6)",
+          }}
+        >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-150"
+            style={{
+              color: "rgba(255,255,255,0.4)",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "rgba(255,255,255,0.9)"
+              e.currentTarget.style.background = "rgba(255,255,255,0.12)"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "rgba(255,255,255,0.4)"
+              e.currentTarget.style.background = "rgba(255,255,255,0.06)"
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {/* Green checkmark circle */}
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+            style={{
+              background: "rgba(42,160,70,0.15)",
+              border: "2px solid rgba(42,160,70,0.5)",
+              boxShadow: "0 0 32px rgba(42,160,70,0.25)",
+            }}
+          >
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 36 36"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M7 18.5L14.5 26L29 11"
+                stroke="#2aa046"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ animation: "checkDraw 0.5s ease 0.1s both" }}
+              />
+            </svg>
+          </div>
+
+          {/* Headline */}
+          <h2
+            id="success-title"
+            className="font-black uppercase leading-tight mb-3"
+            style={{
+              fontFamily: "Arial Black, Impact, Arial, sans-serif",
+              fontSize: "clamp(22px, 5vw, 28px)",
+              color: "#ffffff",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Welcome on board to{" "}
+            <span style={{ color: "#2aa046" }}>MorphFit</span>
+          </h2>
+
+          {/* Sub-copy */}
+          <p
+            className="text-sm leading-relaxed mb-8"
+            style={{
+              color: "rgba(255,255,255,0.55)",
+              fontFamily: "Arial, sans-serif",
+            }}
+          >
+            {already
+              ? "You're already on the list. We'll see you on launch day."
+              : "You're officially on the list. Watch your inbox — the revolution is coming."}
+          </p>
+
+          {/* CTA button */}
+          <button
+            onClick={onClose}
+            className="w-full rounded-xl py-3.5 font-black uppercase tracking-widest text-sm transition-all duration-200"
+            style={{
+              background: "#2aa046",
+              color: "#ffffff",
+              fontFamily: "Arial Black, Arial, sans-serif",
+              letterSpacing: "0.1em",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#23883b" }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#2aa046" }}
+          >
+            Got it
+          </button>
+
+          {/* Decorative corner accents */}
+          <div
+            className="pointer-events-none absolute top-0 left-0 w-16 h-16"
+            style={{
+              borderTop: "2px solid rgba(42,160,70,0.3)",
+              borderLeft: "2px solid rgba(42,160,70,0.3)",
+              borderRadius: "16px 0 0 0",
+            }}
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute bottom-0 right-0 w-16 h-16"
+            style={{
+              borderBottom: "2px solid rgba(42,160,70,0.3)",
+              borderRight: "2px solid rgba(42,160,70,0.3)",
+              borderRadius: "0 0 16px 0",
+            }}
+            aria-hidden
+          />
+        </div>
+      </div>
+
+      {/* Checkmark draw animation */}
+      <style>{`
+        @keyframes checkDraw {
+          from { stroke-dasharray: 40; stroke-dashoffset: 40; }
+          to   { stroke-dasharray: 40; stroke-dashoffset: 0; }
+        }
+      `}</style>
+    </>
+  )
+}
+
 export default function ComingSoonExperience({ launchAtIso }: Props) {
   const target = useMemo(() => new Date(launchAtIso).getTime(), [launchAtIso])
   const [now, setNow] = useState<number>(() => Date.now())
   const [email, setEmail] = useState("")
   const [signup, setSignup] = useState<SignupState>({ status: "idle" })
+  const [showModal, setShowModal] = useState(false)
+  const [modalAlready, setModalAlready] = useState(false)
 
   // Typewriter state
   const [displayed, setDisplayed] = useState("")
@@ -70,32 +233,26 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
       const word = VARIANTS[variantIdx]
 
       if (!deleting) {
-        // Typing forward
         charIdx++
         setDisplayed(word.slice(0, charIdx))
 
         if (charIdx === word.length) {
-          // Fully typed — check if last variant
           if (variantIdx === VARIANTS.length - 1) {
-            // Final word "MORPHFIT." — stay, then reveal email
             timeoutId = setTimeout(() => {
               if (!cancelled) setShowEmail(true)
             }, PAUSE_FULL)
             return
           }
-          // Pause then start deleting
           deleting = true
           timeoutId = setTimeout(tick, PAUSE_FULL)
         } else {
           timeoutId = setTimeout(tick, TYPE_SPEED)
         }
       } else {
-        // Deleting
         charIdx--
         setDisplayed(word.slice(0, charIdx))
 
         if (charIdx === 0) {
-          // Fully deleted — move to next variant
           deleting = false
           variantIdx++
           timeoutId = setTimeout(tick, PAUSE_EMPTY)
@@ -105,7 +262,6 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
       }
     }
 
-    // Small initial delay before starting
     timeoutId = setTimeout(tick, 600)
     return () => {
       cancelled = true
@@ -126,6 +282,8 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
     })
     if (res.ok) {
       setSignup({ status: "success", already: !!res.already })
+      setModalAlready(!!res.already)
+      setShowModal(true)
       setEmail("")
     } else {
       setSignup({
@@ -135,7 +293,6 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
     }
   }
 
-  // Derive the suffix (punctuation) from displayed text for coloring
   const basePart = displayed.slice(0, BASE.length)
   const suffixPart = displayed.slice(BASE.length)
 
@@ -144,6 +301,14 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
       className="relative min-h-[100svh] text-white overflow-hidden flex flex-col"
       style={{ background: "#0d3b28" }}
     >
+      {/* ── Success Modal ── */}
+      {showModal && (
+        <SuccessModal
+          already={modalAlready}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+
       {/* ── Background: subtle radial red glow + noise texture ── */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -169,7 +334,6 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
       {/* ── Header ── */}
       <header className="relative z-10 flex items-center justify-between px-6 sm:px-10 pt-7 pb-4">
         <div className="flex items-center gap-2.5">
-          {/* M logo mark */}
           <div
             className="w-9 h-9 rounded-md grid place-items-center font-black text-white text-lg"
             style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}
@@ -229,11 +393,8 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
               letterSpacing: "-0.01em",
             }}
           >
-            {/* Base MORPHFIT letters */}
             <span style={{ color: "#ffffff" }}>{basePart}</span>
-            {/* Suffix punctuation in red */}
             <span style={{ color: "#c81e1e" }}>{suffixPart}</span>
-            {/* Blinking cursor */}
             <span
               style={{
                 display: "inline-block",
@@ -277,7 +438,8 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
               placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 rounded-xl px-4 py-3.5 text-base text-white placeholder:text-white/35 focus:outline-none transition-colors duration-200"
+              disabled={signup.status === "submitting"}
+              className="flex-1 rounded-xl px-4 py-3.5 text-base text-white placeholder:text-white/35 focus:outline-none transition-colors duration-200 disabled:opacity-60"
               style={{
                 background: "rgba(255,255,255,0.07)",
                 border: "1px solid rgba(255,255,255,0.18)",
@@ -301,26 +463,35 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
                 fontFamily: "Arial Black, Arial, sans-serif",
                 letterSpacing: "0.1em",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#34c957" }}
+              onMouseEnter={(e) => {
+                if (signup.status !== "submitting") e.currentTarget.style.background = "#23883b"
+              }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "#2aa046" }}
             >
-              {signup.status === "submitting" ? "Saving…" : "Notify Me"}
+              {signup.status === "submitting" ? (
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="animate-spin"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  >
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                  </svg>
+                  Submitting…
+                </span>
+              ) : (
+                "Notify Me"
+              )}
             </button>
           </form>
 
-          {/* Feedback messages */}
+          {/* Inline error message (only shown on error, success uses modal) */}
           <div className="min-h-[20px] text-center">
-            {signup.status === "success" && (
-              <p
-                role="status"
-                className="text-sm font-semibold"
-                style={{ color: "#2aa046" }}
-              >
-                {signup.already
-                  ? "You're already on the list. See you on launch day."
-                  : "You're in. Watch your inbox."}
-              </p>
-            )}
             {signup.status === "error" && (
               <p role="alert" className="text-sm" style={{ color: "#f87171" }}>
                 {signup.message}
@@ -376,9 +547,11 @@ export default function ComingSoonExperience({ launchAtIso }: Props) {
         © MorphFit · Dhaka, Bangladesh
       </footer>
 
-      {/* Cursor blink keyframe (fallback) */}
+      {/* Keyframes */}
       <style>{`
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .animate-spin { animation: spin 0.8s linear infinite; }
       `}</style>
     </div>
   )
