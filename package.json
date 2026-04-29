@@ -1,0 +1,13 @@
+{
+  "name": "morphfit",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "cd storefront && yarn install && yarn build",
+    "start": "cd storefront && yarn start",
+    "dev": "cd storefront && yarn dev"
+  }
+}
